@@ -5,7 +5,7 @@
 
 struct PluginMetaData
 {
-  static constexpr  struct plugin_info defaultPluginInfo_ =
+  static constexpr struct plugin_info defaultPluginInfo_ =
   {
     .version = "1",
     .help    = "type -h or --help",
@@ -13,7 +13,7 @@ struct PluginMetaData
 
   static constexpr struct plugin_gcc_version defaultPluginVersionInfo_ =
   {
-   .basever = "9.9",
+   .basever = "10.0",
   };
 };
 
