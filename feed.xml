@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="http://localhost:4000/decoding-gxx/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/decoding-gxx/" rel="alternate" type="text/html" /><updated>2021-12-12T14:10:39+05:30</updated><id>http://localhost:4000/decoding-gxx/feed.xml</id><title type="html">Decoding GXX</title><subtitle>This site would be hosting content related to understanding gxx sources</subtitle><entry><title type="html">Gxx-Plugins-Primer</title><link href="http://localhost:4000/decoding-gxx/2021/12/12/gxx-plugins-primer.html" rel="alternate" type="text/html" title="Gxx-Plugins-Primer" /><published>2021-12-12T13:37:00+05:30</published><updated>2021-12-12T13:37:00+05:30</updated><id>http://localhost:4000/decoding-gxx/2021/12/12/gxx-plugins-primer</id><content type="html" xml:base="http://localhost:4000/decoding-gxx/2021/12/12/gxx-plugins-primer.html">&lt;h2 id=&quot;my-gxx-primer&quot;&gt;My GXX Primer&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;New GCC plugin writing gives us good benefits:
+    &lt;ul&gt;
+      &lt;li&gt;dynamic loading: from compiler startup to assembler output&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Applications with GCC Plugins
+    &lt;ul&gt;
+      &lt;li&gt;Code Generation&lt;/li&gt;
+      &lt;li&gt;Source Code Analysis
+~ C++ code browser
+~ Checking for naming conventions&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Plugins have C-interface but newer versions of GCC (4.5.0+) allow you to write/develop plugins in C++ ways&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;GCC Compilation Pipeline: AST -&amp;gt; Generic -&amp;gt; GIMPLE -&amp;gt; RTL -&amp;gt; ASM&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Plugin can register using PLUGIN_EVENT anywhere in the GCC compilation pipeline (mentioned above)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;GCC is GPL licence and Boost/BSD/Apache all are GPL compatible&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Plugins are GPLv3&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Plugin types
+    &lt;ul&gt;
+      &lt;li&gt;static plugins (cc1 needs recompilation)&lt;/li&gt;
+      &lt;li&gt;dynamic plugins (shared objects, gets loaded by dlopen)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Dynamic plugins
+    &lt;ul&gt;
+      &lt;li&gt;A c/cpp file that is built as a shared object (.so file)&lt;/li&gt;
+      &lt;li&gt;GCC offers a set of hooks, callbacks for the user to introspect that current state of a program
+during that compilation process&lt;/li&gt;
+      &lt;li&gt;All plugins need to have a function ‘plugin_init’ that gets called by the compiler
+        &lt;ul&gt;
+          &lt;li&gt;Plugins are built/bound to a specific version of the GCC.  Hence, it is also a recommended
+practice to perform version checking at the start of the plugin initilization.&lt;/li&gt;
+          &lt;li&gt;During this state, plugin developer must register for different GCC events (pass) that the developer
+would like to have pause at.&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;The first header that needs to be included for GCC plugin development is &lt;gcc-plugins.h&gt;&lt;/gcc-plugins.h&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;GCC PLUGIN PASS:
+    &lt;ul&gt;
+      &lt;li&gt;Intraprocedural passes on a translational unit&lt;/li&gt;
+      &lt;li&gt;Interprocedural passes across translational units&lt;/li&gt;
+      &lt;li&gt;Four optimization passes: { GIMPLE_PASS, RTL_PASS, SIMPLE_IPA_PASS, IPA_PASS }&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Abstract Syntax Tree (AST):
+    &lt;ul&gt;
+      &lt;li&gt;GCC uses globals in different parts of the AST (global_namespace)&lt;/li&gt;
+      &lt;li&gt;GCC tree is mostly about use of MACROs&lt;/li&gt;
+      &lt;li&gt;Each tree in AST contains that node’s type identified by TREE_CODE() macro&lt;/li&gt;
+      &lt;li&gt;AST node types:
+~ declaration nodes *_DECL like TYPE_DECL, VAR_DECL
+        &lt;ul&gt;
+          &lt;li&gt;Names entity in a scope&lt;/li&gt;
+          &lt;li&gt;DECL_NAME() returns the name or NULL (if unassigned)&lt;/li&gt;
+          &lt;li&gt;DECL_SOURCE_FILE() returns source file&lt;/li&gt;
+          &lt;li&gt;DECL_SOURCE_LINE() returns source line
+~ type nodes *_TYPE like RECORD_TYPE, ARRAY_TYPE
+~ TREE_CHAIN() is used to traverse tree lists (tree nodes can form linked lists)&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;global_namespace -&amp;gt; NAMESPACE_DECL&lt;/li&gt;
+      &lt;li&gt;Type nodes:
+~ Fundamental types (VOID_TYPE, BOOLEAN_TYPE, INTEGER_TYPE)
+~ Derived types (POINTER_TYPE, REFERENCE_TYPE, ARRAY_TYPE)
+~ User defined types (RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE)&lt;/li&gt;
+      &lt;li&gt;TYPE_MAIN_VARIANT: returns primary, cvr-unqualified node&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;STATIC Plugins
+    &lt;ol&gt;
+      &lt;li&gt;Write the driver function in your file&lt;/li&gt;
+      &lt;li&gt;Declare your pass in file tree-pass.h:
+extern struct gimple opt pass your pass name;&lt;/li&gt;
+      &lt;li&gt;Add your pass to the appropriate pass list in
+init optimization passes() using the macro NEXT PASS&lt;/li&gt;
+      &lt;li&gt;Add your file details to $SOURCE/gcc/Makefile.in&lt;/li&gt;
+      &lt;li&gt;Configure and build gcc (For simplicity, you can make cc1 only)&lt;/li&gt;
+      &lt;li&gt;Debug cc1 using ddd/gdb if need arises (For debuging cc1 from within gcc, see:
+&lt;a href=&quot;http://gcc.gnu.org/ml/gcc/2004-03/msg01195.html&quot;&gt;msg01195&lt;/a&gt;)&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;important-files&quot;&gt;Important Files&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;gcc/plugin.def contains list of all available PLUGIN EVENTs for the plugin writers&lt;/li&gt;
+  &lt;li&gt;gcc/plugin.c contains the plugin registration mechanisms&lt;/li&gt;
+  &lt;li&gt;gcc/plugin.h lists all the externally exposed symbols, callbacks by GCC.  It also contains the structs that are used by the user while passing plugin arguments to various functions&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;refernces&quot;&gt;Refernces&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;GCC Wiki, click &lt;a href=&quot;https://gcc.gnu.org/onlinedocs/gccint/index.html#SEC_Contents&quot;&gt;here&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Plugin Mechanisms in GCC (IITB)&lt;/li&gt;
+  &lt;li&gt;Tons of other references on Internet&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">My GXX Primer</summary></entry><entry><title type="html">Plugin Examples Overview</title><link href="http://localhost:4000/decoding-gxx/2021/12/12/plugin-examples-overview.html" rel="alternate" type="text/html" title="Plugin Examples Overview" /><published>2021-12-12T08:59:00+05:30</published><updated>2021-12-12T08:59:00+05:30</updated><id>http://localhost:4000/decoding-gxx/2021/12/12/plugin-examples-overview</id><content type="html" xml:base="http://localhost:4000/decoding-gxx/2021/12/12/plugin-examples-overview.html">&lt;p&gt;There has been some delay in last few months on updates to this page.&lt;br /&gt;
+But, this post should redirect the users to the current status of the examples.&lt;/p&gt;
+
+&lt;h1 id=&quot;few-changes-to-this-project-site&quot;&gt;Few Changes to this Project Site&lt;/h1&gt;
+&lt;p&gt;Since, I presume the examples to be self-explanatory, hence, I’ve decided to atleast stop writing individual posts for each GXX plugin example.&lt;/p&gt;
+
+&lt;h1 id=&quot;what-to-expect-in-this-post-&quot;&gt;What to Expect in this Post ?&lt;/h1&gt;
+&lt;p&gt;I’d rather try to put together a synopsys of my learnings while writing few Gxx plugins here as part of this post.&lt;/p&gt;
+
+&lt;h1 id=&quot;plugin-examples&quot;&gt;Plugin Examples&lt;/h1&gt;
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;Plugin Name&lt;/code&gt; of individual plugin examples have been hyperlinked with their reelvant source code.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;S.No.&lt;/th&gt;
+      &lt;th&gt;Plugin Name&lt;/th&gt;
+      &lt;th&gt;Remarks&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1.&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/VSPhaneendraPaluri/decoding-gxx/blob/master/plugins/00_dummy_plugin/DummyGxxPlugin.cpp&quot;&gt;00_dummy_plugin&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Demonstrates on how to get started with GCC Plugins&lt;br /&gt;Setting up the basic infra-structure, and so on&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2.&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/VSPhaneendraPaluri/decoding-gxx/blob/master/plugins/01_basic_plugin/BasicGxxPlugin.cpp&quot;&gt;01_basic_plugin&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;A basic plugin on how to express plugin name, version and so on&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;3.&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/VSPhaneendraPaluri/decoding-gxx/blob/master/plugins/02_custom_metadata_plugin/CustomMetaDataPlugin.cpp&quot;&gt;02_custom_metadata_plugin&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Illustrates how to append GCC plugin info’with user provided data&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;4.&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/VSPhaneendraPaluri/decoding-gxx/blob/master/plugins/03_plugin_info_by_cb/PluginInfobyCallback.cpp&quot;&gt;03_plugin_info_by_cb&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Sample template demonstrates the various hooks provided by the GCC in order to understand the various phases/states during a plugin execution&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;5.&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/VSPhaneendraPaluri/decoding-gxx/blob/master/plugins/04_cxx_ast/CxxAst.cpp&quot;&gt;04_cxx_ast&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Showcases how to parse the C++ AST tree generated by the GCC Front-End&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;few-mentions&quot;&gt;Few Mentions&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;As and where possible, I’ve tried to provide necessary comments within the sources itself.&lt;/li&gt;
+  &lt;li&gt;I’ll try to consolidate all my learnings so far until now regarding GXX in another post.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Until then, keep exploring !! :smile:&lt;/p&gt;</content><author><name></name></author><summary type="html">There has been some delay in last few months on updates to this page. But, this post should redirect the users to the current status of the examples.</summary></entry><entry><title type="html">Setup InsfraStructure To Write Plugins</title><link href="http://localhost:4000/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins.html" rel="alternate" type="text/html" title="Setup InsfraStructure To Write Plugins" /><published>2019-12-14T13:19:00+05:30</published><updated>2019-12-14T13:19:00+05:30</updated><id>http://localhost:4000/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins</id><content type="html" xml:base="http://localhost:4000/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins.html">&lt;p&gt;Hello Guys, welcome to this hands-on tutorial on how to get started creating a dummy G++ Plugin.&lt;/p&gt;
+
+&lt;p&gt;Currently, while I’m jotting down this post, the version that I’ve started to experiment writing G++ Plugins is with 9.2.0. Plugins support was introduced into GCC version 4.5.0 onwards.  Plugins allow gcc/gxx and it eco-system developers to introduce new features to the users.  Plugins once written in a way that is in agreement with the GCC guidelines, it gets loaded as a shared object file (.so).  The plugins are generally written in a way that they make use of the gcc-plugin interfaces (callbacks rather) to intervene in various phases of the compilation process.&lt;/p&gt;
+
+&lt;p&gt;Actually, there is not a very clean interface available to get to all the (internal) details of the GCC.  Hence, one needs to spend time and dive deep down to understand the GCC framework better.&lt;/p&gt;
+
+&lt;h1 id=&quot;why-only-plugins-to-decode-gcc-&quot;&gt;Why ONLY PLUGINs to decode GCC ?&lt;/h1&gt;
+&lt;p&gt;Well, as mentioned earlier too, there are some good amount of documentations made available by the GNU team itself, and other organizations too (GNU being a open-source project).  For instance,&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://gcc.gnu.org/wiki/HomePage&quot;&gt;GCC Wiki&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://gcc.gnu.org/onlinedocs/gccint&quot;&gt;GNU Online Docs&lt;/a&gt;
+and many more …&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;IMHO, it is always good to start-off with a use-case that checks a feature set provided by some implementation.  This way, one gets to hit various parts of the framework.&lt;/p&gt;
+
+&lt;h1 id=&quot;what-is-the-goal-&quot;&gt;What is the goal ?&lt;/h1&gt;
+&lt;p&gt;To create a simple G++ plugin that once integrated properly, shall do nothing but would report something like “PVS Dummy Plugin Successful”.  The successful execution of this dummy plugin would prove that the basic infra-structure required for extending the plugin to fit to various use-cases is already ready.&lt;/p&gt;
+
+&lt;h1 id=&quot;exercise-some-caution-&quot;&gt;Exercise Some Caution !!&lt;/h1&gt;
+&lt;p&gt;NOTE:  It is always recommended to not to directly work on the system installed GCC since, things could easily go awkward if any issue occurs.  Hence, users are recommended to download GCC for original GCC downloads webpage, store it locally and make edits to it.  Remember, don’t let the build artifacts get installed in the system space.&lt;/p&gt;
+
+&lt;p&gt;Just a reminder:
+GCC version 4.5.0: Plugins feature was introduced
+GCC version 4.7.0: Once could write both C and C++-based plugins
+GCC version 4.8.0: Plugins could be written onlly C++ way !&lt;/p&gt;
+
+&lt;p&gt;Always better to have a local version of GCC built that is configured to generate build artifacts locally.&lt;/p&gt;
+
+&lt;h1 id=&quot;steps-to-getting-started&quot;&gt;Steps to Getting Started&lt;/h1&gt;
+&lt;h4 id=&quot;setup-and-export-paths-to-few-sources-that-would-be-used-later-by-other-scripts&quot;&gt;Setup and export paths to few sources that would be used later by other scripts&lt;/h4&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  export GXX_SRCDIR=${HOME}/sources/gxx/svn-sources/gcc
+  export GXX_BUILDDIR=${GXX_SRCDIR}/../gxx-build
+  export GXX_INSTALLDIR=${HOME}/MyInstalls/gxx/gcc-install
+  export GXX_PLUGINDIR=${HOME}/MyWorks/01_plugins/01_gxx
+ 
+  echo &quot;GXX Sources Directory ------ ${GXX_SRCDIR}&quot;
+  echo &quot;GXX Build Directory -------- ${GXX_BUILDDIR}&quot;
+  echo &quot;GXX Install Directory ------ ${GXX_INSTALLDIR}&quot;
+  echo &quot;GXX Plugins Directory ------ ${GXX_PLUGINDIR}&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;download-build-and-install-gcc&quot;&gt;Download, Build and Install GCC&lt;/h4&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   1 # Download / Checkout GCC from original repository
+   2 mkdir -p ${GXX_SRCDIR}
+   3 svn checkout svn://gcc.gnu.org/svn/gcc/trunk ${GXX_SRCDIR}
+   4 cd ${GXX_SRCDIR}
+   5 ./contrib/download_prerequisites
+   6
+   7 # Configure and Build GCC
+   8 mkdir -p ${GXX_BUILDDIR}
+   9 cd ${GXX_BUILDDIR}
+  10
+  11 mkdir -p ${GXX_INSTALLDIR}
+  12 SED=sed
+  13 ${GXX_SRCDIR}/configure --prefix=${GXX_INSTALLDIR} --enable-languages=c,c++ --disable-multilib --disable-bootstrap --with-system-zlib
+  14 make -j$(getconf _NPROCESSORS_ONLN)
+  15
+  16 # Install GCC
+  17 make install
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;sstart-with-an-empty-plugin&quot;&gt;Sstart with an Empty Plugin&lt;/h4&gt;
+&lt;p&gt;I’ve named the plugin - ‘DummyGxxPlugin.cpp’.
+  I’ve tried to make use of CMake build generator to get my C++-based plugins get built.
+  Below is the content of the CMakeList file.&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    1 cmake_minimum_required(VERSION 3.10)
+    2
+    3 set(PLUGIN_NAME dummyGxxPlugin)
+    4 project(${PLUGIN_NAME})
+    5
+    6 set(CMAKE_CXX_STANDARD 14)
+    7 set(COMPILE_TIME_FLAGS
+    8  -std=c++14
+    9  -Wall
+   10  -fno-rtti
+   11  )
+   12 set(LINK_TIME_FLAGS
+   13  -fPIC
+   14  )
+   15
+   16 set(SOURCES
+   17   DummyGxxPlugin.cpp
+   18   )
+   19
+   20 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+   21
+   22 target_compile_options(${PROJECT_NAME}
+   23   PRIVATE
+   24   ${COMPILE_TIME_FLAGS}
+   25   )
+   26 target_link_libraries(${PROJECT_NAME}
+   27   PRIVATE
+   28   ${LINK_TIME_FLAGS}
+   29   )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Alternaltively, you can get this from &lt;a href=&quot;https://github.com/VSPhaneendraPaluri/decoding-gxx/blob/master/plugins/00_dummy_plugin/CMakeLists.txt&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4 id=&quot;build-the-plugin-currently-just-an-empty-file&quot;&gt;Build the Plugin (currently just an empty file)&lt;/h4&gt;
+&lt;p&gt;The plugin gets built as a SHARED OBJECT&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  1 cd ${GXX_PLUGINSDIR}
+  2
+  3 cmake -G &quot;Unix Makefiles&quot; .
+  4 make
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Woohoo !  The plugin (??) is built !&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  total 44
+  drwxrwxrwx 1 pvs pvs  4096 Dec 14 07:26 .
+  drwxrwxrwx 1 pvs pvs  4096 Dec 14 12:45 ..
+  -rw-rw-rw- 1 pvs pvs 12761 Dec 14 07:25 CMakeCache.txt
+  -drwxrwxrwx 1 pvs pvs  4096 Dec 14 07:26 CMakeFiles
+  -rw-rw-rw- 1 pvs pvs  5142 Dec 14 07:26 Makefile
+  -rw-rw-rw- 1 pvs pvs  1532 Dec 14 07:25 cmake_install.cmake
+  -rwxrwxrwx 1 pvs pvs  8256 Dec 14 07:26 libdummyGxxPlugin.so
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Wait, how to confirm whether the infra-structure setup works or not ?&lt;/p&gt;
+
+&lt;h4 id=&quot;sanity-check-of-the-setup&quot;&gt;Sanity Check of the SetUp&lt;/h4&gt;
+&lt;p&gt;Try driving the locally installed G++ binaries by providing the built plugin as a command line argument along with few other required arguments&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  ${GXX_INSTALLDIR}/bin/g++ -fplugin=./libdummyGxxPlugin.so -c -x c++ /dev/null -o /dev/null
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The execution of the above command should report something like this&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  cc1plus: fatal error: plugin ./libdummyGxxPlugin.so is not licensed under a GPL-compatible license ./libdummyGxxPlugin.so: undefined symbol: plugin_is_GPL_compatible
+  compilation terminated.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Yes, that is expected, since our plugin is just an empty file for now.
+  But, this proves one is good to proceed further and unfold the next beauties of GXX.&lt;/p&gt;
+
+&lt;p&gt;To begin with writing very basic G++ plugin, go over to my next post.&lt;/p&gt;</content><author><name></name></author><summary type="html">Hello Guys, welcome to this hands-on tutorial on how to get started creating a dummy G++ Plugin.</summary></entry></feed>

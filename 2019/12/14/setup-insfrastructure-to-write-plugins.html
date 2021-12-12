@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Setup InsfraStructure To Write Plugins | Decoding GXX</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="Setup InsfraStructure To Write Plugins" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Hello Guys, welcome to this hands-on tutorial on how to get started creating a dummy G++ Plugin." />
+<meta property="og:description" content="Hello Guys, welcome to this hands-on tutorial on how to get started creating a dummy G++ Plugin." />
+<link rel="canonical" href="http://localhost:4000/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins.html" />
+<meta property="og:url" content="http://localhost:4000/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins.html" />
+<meta property="og:site_name" content="Decoding GXX" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-12-14T13:19:00+05:30" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","headline":"Setup InsfraStructure To Write Plugins","dateModified":"2019-12-14T13:19:00+05:30","datePublished":"2019-12-14T13:19:00+05:30","url":"http://localhost:4000/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins.html"},"description":"Hello Guys, welcome to this hands-on tutorial on how to get started creating a dummy G++ Plugin.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/decoding-gxx/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/decoding-gxx/feed.xml" title="Decoding GXX" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/decoding-gxx/">Decoding GXX</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Setup InsfraStructure To Write Plugins</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-12-14T13:19:00+05:30" itemprop="datePublished">Dec 14, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Hello Guys, welcome to this hands-on tutorial on how to get started creating a dummy G++ Plugin.</p>
+
+<p>Currently, while I’m jotting down this post, the version that I’ve started to experiment writing G++ Plugins is with 9.2.0. Plugins support was introduced into GCC version 4.5.0 onwards.  Plugins allow gcc/gxx and it eco-system developers to introduce new features to the users.  Plugins once written in a way that is in agreement with the GCC guidelines, it gets loaded as a shared object file (.so).  The plugins are generally written in a way that they make use of the gcc-plugin interfaces (callbacks rather) to intervene in various phases of the compilation process.</p>
+
+<p>Actually, there is not a very clean interface available to get to all the (internal) details of the GCC.  Hence, one needs to spend time and dive deep down to understand the GCC framework better.</p>
+
+<h1 id="why-only-plugins-to-decode-gcc-">Why ONLY PLUGINs to decode GCC ?</h1>
+<p>Well, as mentioned earlier too, there are some good amount of documentations made available by the GNU team itself, and other organizations too (GNU being a open-source project).  For instance,</p>
+<ul>
+  <li><a href="https://gcc.gnu.org/wiki/HomePage">GCC Wiki</a></li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/gccint">GNU Online Docs</a>
+and many more …</li>
+</ul>
+
+<p>IMHO, it is always good to start-off with a use-case that checks a feature set provided by some implementation.  This way, one gets to hit various parts of the framework.</p>
+
+<h1 id="what-is-the-goal-">What is the goal ?</h1>
+<p>To create a simple G++ plugin that once integrated properly, shall do nothing but would report something like “PVS Dummy Plugin Successful”.  The successful execution of this dummy plugin would prove that the basic infra-structure required for extending the plugin to fit to various use-cases is already ready.</p>
+
+<h1 id="exercise-some-caution-">Exercise Some Caution !!</h1>
+<p>NOTE:  It is always recommended to not to directly work on the system installed GCC since, things could easily go awkward if any issue occurs.  Hence, users are recommended to download GCC for original GCC downloads webpage, store it locally and make edits to it.  Remember, don’t let the build artifacts get installed in the system space.</p>
+
+<p>Just a reminder:
+GCC version 4.5.0: Plugins feature was introduced
+GCC version 4.7.0: Once could write both C and C++-based plugins
+GCC version 4.8.0: Plugins could be written onlly C++ way !</p>
+
+<p>Always better to have a local version of GCC built that is configured to generate build artifacts locally.</p>
+
+<h1 id="steps-to-getting-started">Steps to Getting Started</h1>
+<h4 id="setup-and-export-paths-to-few-sources-that-would-be-used-later-by-other-scripts">Setup and export paths to few sources that would be used later by other scripts</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  export GXX_SRCDIR=${HOME}/sources/gxx/svn-sources/gcc
+  export GXX_BUILDDIR=${GXX_SRCDIR}/../gxx-build
+  export GXX_INSTALLDIR=${HOME}/MyInstalls/gxx/gcc-install
+  export GXX_PLUGINDIR=${HOME}/MyWorks/01_plugins/01_gxx
+ 
+  echo "GXX Sources Directory ------ ${GXX_SRCDIR}"
+  echo "GXX Build Directory -------- ${GXX_BUILDDIR}"
+  echo "GXX Install Directory ------ ${GXX_INSTALLDIR}"
+  echo "GXX Plugins Directory ------ ${GXX_PLUGINDIR}"
+</code></pre></div></div>
+<h4 id="download-build-and-install-gcc">Download, Build and Install GCC</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   1 # Download / Checkout GCC from original repository
+   2 mkdir -p ${GXX_SRCDIR}
+   3 svn checkout svn://gcc.gnu.org/svn/gcc/trunk ${GXX_SRCDIR}
+   4 cd ${GXX_SRCDIR}
+   5 ./contrib/download_prerequisites
+   6
+   7 # Configure and Build GCC
+   8 mkdir -p ${GXX_BUILDDIR}
+   9 cd ${GXX_BUILDDIR}
+  10
+  11 mkdir -p ${GXX_INSTALLDIR}
+  12 SED=sed
+  13 ${GXX_SRCDIR}/configure --prefix=${GXX_INSTALLDIR} --enable-languages=c,c++ --disable-multilib --disable-bootstrap --with-system-zlib
+  14 make -j$(getconf _NPROCESSORS_ONLN)
+  15
+  16 # Install GCC
+  17 make install
+</code></pre></div></div>
+
+<h4 id="sstart-with-an-empty-plugin">Sstart with an Empty Plugin</h4>
+<p>I’ve named the plugin - ‘DummyGxxPlugin.cpp’.
+  I’ve tried to make use of CMake build generator to get my C++-based plugins get built.
+  Below is the content of the CMakeList file.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    1 cmake_minimum_required(VERSION 3.10)
+    2
+    3 set(PLUGIN_NAME dummyGxxPlugin)
+    4 project(${PLUGIN_NAME})
+    5
+    6 set(CMAKE_CXX_STANDARD 14)
+    7 set(COMPILE_TIME_FLAGS
+    8  -std=c++14
+    9  -Wall
+   10  -fno-rtti
+   11  )
+   12 set(LINK_TIME_FLAGS
+   13  -fPIC
+   14  )
+   15
+   16 set(SOURCES
+   17   DummyGxxPlugin.cpp
+   18   )
+   19
+   20 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+   21
+   22 target_compile_options(${PROJECT_NAME}
+   23   PRIVATE
+   24   ${COMPILE_TIME_FLAGS}
+   25   )
+   26 target_link_libraries(${PROJECT_NAME}
+   27   PRIVATE
+   28   ${LINK_TIME_FLAGS}
+   29   )
+</code></pre></div></div>
+<p>Alternaltively, you can get this from <a href="https://github.com/VSPhaneendraPaluri/decoding-gxx/blob/master/plugins/00_dummy_plugin/CMakeLists.txt">here</a>.</p>
+
+<h4 id="build-the-plugin-currently-just-an-empty-file">Build the Plugin (currently just an empty file)</h4>
+<p>The plugin gets built as a SHARED OBJECT</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  1 cd ${GXX_PLUGINSDIR}
+  2
+  3 cmake -G "Unix Makefiles" .
+  4 make
+</code></pre></div></div>
+
+<p>Woohoo !  The plugin (??) is built !</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  total 44
+  drwxrwxrwx 1 pvs pvs  4096 Dec 14 07:26 .
+  drwxrwxrwx 1 pvs pvs  4096 Dec 14 12:45 ..
+  -rw-rw-rw- 1 pvs pvs 12761 Dec 14 07:25 CMakeCache.txt
+  -drwxrwxrwx 1 pvs pvs  4096 Dec 14 07:26 CMakeFiles
+  -rw-rw-rw- 1 pvs pvs  5142 Dec 14 07:26 Makefile
+  -rw-rw-rw- 1 pvs pvs  1532 Dec 14 07:25 cmake_install.cmake
+  -rwxrwxrwx 1 pvs pvs  8256 Dec 14 07:26 libdummyGxxPlugin.so
+</code></pre></div></div>
+
+<p>Wait, how to confirm whether the infra-structure setup works or not ?</p>
+
+<h4 id="sanity-check-of-the-setup">Sanity Check of the SetUp</h4>
+<p>Try driving the locally installed G++ binaries by providing the built plugin as a command line argument along with few other required arguments</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  ${GXX_INSTALLDIR}/bin/g++ -fplugin=./libdummyGxxPlugin.so -c -x c++ /dev/null -o /dev/null
+</code></pre></div></div>
+<p>The execution of the above command should report something like this</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  cc1plus: fatal error: plugin ./libdummyGxxPlugin.so is not licensed under a GPL-compatible license ./libdummyGxxPlugin.so: undefined symbol: plugin_is_GPL_compatible
+  compilation terminated.
+</code></pre></div></div>
+<p>Yes, that is expected, since our plugin is just an empty file for now.
+  But, this proves one is good to proceed further and unfold the next beauties of GXX.</p>
+
+<p>To begin with writing very basic G++ plugin, go over to my next post.</p>
+
+  </div><a class="u-url" href="/decoding-gxx/2019/12/14/setup-insfrastructure-to-write-plugins.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/decoding-gxx/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Decoding GXX</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Decoding GXX</li><li><a class="u-email" href="mailto:pvs.myworks@gmail.com">pvs.myworks@gmail.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/vsphaneendrapaluri"><svg class="svg-icon"><use xlink:href="/decoding-gxx/assets/minima-social-icons.svg#github"></use></svg> <span class="username">vsphaneendrapaluri</span></a></li><li><a href="https://www.twitter.com/pvsphaneendra"><svg class="svg-icon"><use xlink:href="/decoding-gxx/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">pvsphaneendra</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>This site would be hosting content related to understanding gxx sources</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

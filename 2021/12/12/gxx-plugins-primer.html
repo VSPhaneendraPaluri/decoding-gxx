@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Gxx-Plugins-Primer | Decoding GXX</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="Gxx-Plugins-Primer" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="My GXX Primer" />
+<meta property="og:description" content="My GXX Primer" />
+<link rel="canonical" href="http://localhost:4000/decoding-gxx/2021/12/12/gxx-plugins-primer.html" />
+<meta property="og:url" content="http://localhost:4000/decoding-gxx/2021/12/12/gxx-plugins-primer.html" />
+<meta property="og:site_name" content="Decoding GXX" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-12-12T13:37:00+05:30" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","headline":"Gxx-Plugins-Primer","dateModified":"2021-12-12T13:37:00+05:30","datePublished":"2021-12-12T13:37:00+05:30","url":"http://localhost:4000/decoding-gxx/2021/12/12/gxx-plugins-primer.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/decoding-gxx/2021/12/12/gxx-plugins-primer.html"},"description":"My GXX Primer","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/decoding-gxx/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/decoding-gxx/feed.xml" title="Decoding GXX" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/decoding-gxx/">Decoding GXX</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Gxx-Plugins-Primer</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-12-12T13:37:00+05:30" itemprop="datePublished">Dec 12, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h2 id="my-gxx-primer">My GXX Primer</h2>
+
+<ul>
+  <li>New GCC plugin writing gives us good benefits:
+    <ul>
+      <li>dynamic loading: from compiler startup to assembler output</li>
+    </ul>
+  </li>
+  <li>Applications with GCC Plugins
+    <ul>
+      <li>Code Generation</li>
+      <li>Source Code Analysis
+~ C++ code browser
+~ Checking for naming conventions</li>
+    </ul>
+  </li>
+  <li>
+    <p>Plugins have C-interface but newer versions of GCC (4.5.0+) allow you to write/develop plugins in C++ ways</p>
+  </li>
+  <li>
+    <p>GCC Compilation Pipeline: AST -&gt; Generic -&gt; GIMPLE -&gt; RTL -&gt; ASM</p>
+  </li>
+  <li>
+    <p>Plugin can register using PLUGIN_EVENT anywhere in the GCC compilation pipeline (mentioned above)</p>
+  </li>
+  <li>
+    <p>GCC is GPL licence and Boost/BSD/Apache all are GPL compatible</p>
+  </li>
+  <li>
+    <p>Plugins are GPLv3</p>
+  </li>
+  <li>Plugin types
+    <ul>
+      <li>static plugins (cc1 needs recompilation)</li>
+      <li>dynamic plugins (shared objects, gets loaded by dlopen)</li>
+    </ul>
+  </li>
+  <li>Dynamic plugins
+    <ul>
+      <li>A c/cpp file that is built as a shared object (.so file)</li>
+      <li>GCC offers a set of hooks, callbacks for the user to introspect that current state of a program
+during that compilation process</li>
+      <li>All plugins need to have a function ‘plugin_init’ that gets called by the compiler
+        <ul>
+          <li>Plugins are built/bound to a specific version of the GCC.  Hence, it is also a recommended
+practice to perform version checking at the start of the plugin initilization.</li>
+          <li>During this state, plugin developer must register for different GCC events (pass) that the developer
+would like to have pause at.</li>
+        </ul>
+      </li>
+      <li>The first header that needs to be included for GCC plugin development is <gcc-plugins.h></gcc-plugins.h></li>
+    </ul>
+  </li>
+  <li>GCC PLUGIN PASS:
+    <ul>
+      <li>Intraprocedural passes on a translational unit</li>
+      <li>Interprocedural passes across translational units</li>
+      <li>Four optimization passes: { GIMPLE_PASS, RTL_PASS, SIMPLE_IPA_PASS, IPA_PASS }</li>
+    </ul>
+  </li>
+  <li>Abstract Syntax Tree (AST):
+    <ul>
+      <li>GCC uses globals in different parts of the AST (global_namespace)</li>
+      <li>GCC tree is mostly about use of MACROs</li>
+      <li>Each tree in AST contains that node’s type identified by TREE_CODE() macro</li>
+      <li>AST node types:
+~ declaration nodes *_DECL like TYPE_DECL, VAR_DECL
+        <ul>
+          <li>Names entity in a scope</li>
+          <li>DECL_NAME() returns the name or NULL (if unassigned)</li>
+          <li>DECL_SOURCE_FILE() returns source file</li>
+          <li>DECL_SOURCE_LINE() returns source line
+~ type nodes *_TYPE like RECORD_TYPE, ARRAY_TYPE
+~ TREE_CHAIN() is used to traverse tree lists (tree nodes can form linked lists)</li>
+        </ul>
+      </li>
+      <li>global_namespace -&gt; NAMESPACE_DECL</li>
+      <li>Type nodes:
+~ Fundamental types (VOID_TYPE, BOOLEAN_TYPE, INTEGER_TYPE)
+~ Derived types (POINTER_TYPE, REFERENCE_TYPE, ARRAY_TYPE)
+~ User defined types (RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE)</li>
+      <li>TYPE_MAIN_VARIANT: returns primary, cvr-unqualified node</li>
+    </ul>
+  </li>
+  <li>STATIC Plugins
+    <ol>
+      <li>Write the driver function in your file</li>
+      <li>Declare your pass in file tree-pass.h:
+extern struct gimple opt pass your pass name;</li>
+      <li>Add your pass to the appropriate pass list in
+init optimization passes() using the macro NEXT PASS</li>
+      <li>Add your file details to $SOURCE/gcc/Makefile.in</li>
+      <li>Configure and build gcc (For simplicity, you can make cc1 only)</li>
+      <li>Debug cc1 using ddd/gdb if need arises (For debuging cc1 from within gcc, see:
+<a href="http://gcc.gnu.org/ml/gcc/2004-03/msg01195.html">msg01195</a>)</li>
+    </ol>
+  </li>
+</ul>
+
+<h2 id="important-files">Important Files</h2>
+<ul>
+  <li>gcc/plugin.def contains list of all available PLUGIN EVENTs for the plugin writers</li>
+  <li>gcc/plugin.c contains the plugin registration mechanisms</li>
+  <li>gcc/plugin.h lists all the externally exposed symbols, callbacks by GCC.  It also contains the structs that are used by the user while passing plugin arguments to various functions</li>
+</ul>
+
+<h2 id="refernces">Refernces</h2>
+<ul>
+  <li>GCC Wiki, click <a href="https://gcc.gnu.org/onlinedocs/gccint/index.html#SEC_Contents">here</a></li>
+  <li>Plugin Mechanisms in GCC (IITB)</li>
+  <li>Tons of other references on Internet</li>
+</ul>
+
+  </div><a class="u-url" href="/decoding-gxx/2021/12/12/gxx-plugins-primer.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/decoding-gxx/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Decoding GXX</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Decoding GXX</li><li><a class="u-email" href="mailto:pvs.myworks@gmail.com">pvs.myworks@gmail.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/vsphaneendrapaluri"><svg class="svg-icon"><use xlink:href="/decoding-gxx/assets/minima-social-icons.svg#github"></use></svg> <span class="username">vsphaneendrapaluri</span></a></li><li><a href="https://www.twitter.com/pvsphaneendra"><svg class="svg-icon"><use xlink:href="/decoding-gxx/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">pvsphaneendra</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>This site would be hosting content related to understanding gxx sources</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
