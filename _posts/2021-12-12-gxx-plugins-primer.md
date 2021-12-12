@@ -1,0 +1,88 @@
+---
+layout: post
+title: Gxx-Plugins-Primer
+date: 2021-12-12 13:37 +0530
+---
+
+## My GXX Primer
+
+* New GCC plugin writing gives us good benefits:
+  - dynamic loading: from compiler startup to assembler output
+
+* Applications with GCC Plugins
+  - Code Generation
+  - Source Code Analysis
+    ~ C++ code browser
+    ~ Checking for naming conventions
+
+* Plugins have C-interface but newer versions of GCC (4.5.0+) allow you to write/develop plugins in C++ ways
+  
+* GCC Compilation Pipeline: AST -> Generic -> GIMPLE -> RTL -> ASM
+  
+* Plugin can register using PLUGIN_EVENT anywhere in the GCC compilation pipeline (mentioned above)
+
+* GCC is GPL licence and Boost/BSD/Apache all are GPL compatible
+
+* Plugins are GPLv3
+
+* Plugin types
+  - static plugins (cc1 needs recompilation)
+  - dynamic plugins (shared objects, gets loaded by dlopen)
+
+* Dynamic plugins
+  - A c/cpp file that is built as a shared object (.so file)
+  - GCC offers a set of hooks, callbacks for the user to introspect that current state of a program
+    during that compilation process
+  - All plugins need to have a function 'plugin_init' that gets called by the compiler
+    - Plugins are built/bound to a specific version of the GCC.  Hence, it is also a recommended
+      practice to perform version checking at the start of the plugin initilization.
+    - During this state, plugin developer must register for different GCC events (pass) that the developer
+      would like to have pause at.
+  - The first header that needs to be included for GCC plugin development is <gcc-plugins.h>
+
+* GCC PLUGIN PASS:
+  - Intraprocedural passes on a translational unit
+  - Interprocedural passes across translational units
+  - Four optimization passes: { GIMPLE_PASS, RTL_PASS, SIMPLE_IPA_PASS, IPA_PASS }
+
+* Abstract Syntax Tree (AST):
+  - GCC uses globals in different parts of the AST (global_namespace)
+  - GCC tree is mostly about use of MACROs
+  - Each tree in AST contains that node's type identified by TREE_CODE() macro
+  - AST node types:
+    ~ declaration nodes *_DECL like TYPE_DECL, VAR_DECL
+      - Names entity in a scope
+      - DECL_NAME() returns the name or NULL (if unassigned)
+      - DECL_SOURCE_FILE() returns source file
+      - DECL_SOURCE_LINE() returns source line
+    ~ type nodes *_TYPE like RECORD_TYPE, ARRAY_TYPE
+    ~ TREE_CHAIN() is used to traverse tree lists (tree nodes can form linked lists)
+  - global_namespace -> NAMESPACE_DECL
+  - Type nodes:
+    ~ Fundamental types (VOID_TYPE, BOOLEAN_TYPE, INTEGER_TYPE)
+    ~ Derived types (POINTER_TYPE, REFERENCE_TYPE, ARRAY_TYPE)
+    ~ User defined types (RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE)
+  - TYPE_MAIN_VARIANT: returns primary, cvr-unqualified node
+  
+* STATIC Plugins
+  1. Write the driver function in your file
+  2. Declare your pass in file tree-pass.h:
+     extern struct gimple opt pass your pass name;
+  3. Add your pass to the appropriate pass list in
+     init optimization passes() using the macro NEXT PASS
+  4. Add your file details to $SOURCE/gcc/Makefile.in
+  5. Configure and build gcc (For simplicity, you can make cc1 only)
+  6. Debug cc1 using ddd/gdb if need arises (For debuging cc1 from within gcc, see:
+     [msg01195](http://gcc.gnu.org/ml/gcc/2004-03/msg01195.html))
+
+
+## Important Files
+- gcc/plugin.def contains list of all available PLUGIN EVENTs for the plugin writers
+- gcc/plugin.c contains the plugin registration mechanisms
+- gcc/plugin.h lists all the externally exposed symbols, callbacks by GCC.  It also contains the structs that are used by the user while passing plugin arguments to various functions
+
+
+## Refernces
+- GCC Wiki, click [here](https://gcc.gnu.org/onlinedocs/gccint/index.html#SEC_Contents)
+- Plugin Mechanisms in GCC (IITB)
+- Tons of other references on Internet
