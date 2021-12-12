@@ -82,6 +82,11 @@ int plugin_init(struct plugin_name_args *plugin_info,
                     PLUGIN_FINISH,
                     GccPluginCallback::pluginFinish,
                     NULL);
+  
+  register_callback(plugin_info->base_name,
+                    PLUGIN_INFO,
+                    NULL,
+                    static_cast<struct plugin_info *>(&userPluginInfo));
 
   register_callback(plugin_info->base_name,
                     PLUGIN_GGC_START,

@@ -1,4 +1,4 @@
-#!/bin/bash`
+#!/bin/bash
 
 echo ""
 echo "===================================================="
@@ -44,4 +44,15 @@ ${GXX_INSTALLDIR}/bin/../libexec/gcc/x86_64-pc-linux-gnu/10.0.0/cc1 -fplugin=./l
 echo ""
 echo "Now, trying to validate the functions called by the plugin"
 ${GXX_INSTALLDIR}/bin/g++ -fplugin=./lib03_PluginInfobyCb.so -c ${GXX_PLUGINSDIR}/test_files/TestFile.cpp -o /dev/null
+fi
+
+if [ $1 == 4 ]
+then
+echo ""
+echo ""
+echo "Checking 04_cxx_ast plugin ..."
+cd ${GXX_PLUGINSDIR}/build/04_cxx_ast
+echo "Now, trying to validate the functions called by the plugin"
+${GXX_INSTALLDIR}/bin/g++ -fplugin=./lib04_CxxAst.so -c ${GXX_PLUGINSDIR}/test_files/TestFile.cpp -o /dev/null
+#${GXX_INSTALLDIR}/bin/g++ -fplugin=./lib04_CxxAst.so -c ${GXX_PLUGINSDIR}/test_files/ExceptionHandler.h -o /dev/null
 fi
